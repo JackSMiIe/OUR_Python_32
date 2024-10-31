@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Главная страница</title>
+    <!-- Подключение Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container my-4">
+        <h1 class="text-center mb-4">Загруженность улиц</h1>
+
+        <!-- Сообщение об ошибке -->
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <!-- Форма для добавления человека на улицу -->
+        <h2>Добавить тушку на улицу</h2>
+        <form method="post" class="mb-4">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="person_id" class="form-label">Человек:</label>
+                <select name="person_id" id="person_id" class="form-select">
+                    {% for person in persons %}
+                        <option value="{{ person.id }}">{{ person.username }} (Статус: {{ person.get_status_display }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="street_id" class="form-label">Улица:</label>
+                <select name="street_id" id="street_id" class="form-select">
+                    {% for street in streets %}
+                        <option value="{{ street.id }}">{{ street.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+        </form>
+
+        <!-- Список улиц и их загруженность -->
+        <h2>Улицы</h2>
+        <ul class="list-group mb-4">
+            {% for street in streets %}
+                <li class="list-group-item">
+                    <strong>{{ street.name }}</strong> - Загруженность: <span class="badge bg-info">{{ street.workload }}</span>
+                    <ul class="list-group mt-2">
+                        {% for journey in street.journey_set.all %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ journey.id_person.username }} - Статус: {{ journey.id_person.get_status_display }}
+                                <a href="{% url 'remove_person' journey.id %}" class="btn btn-danger btn-sm">Удалить</a>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">Нет людей на улице</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Подключение Bootstrap JS и Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+</body>
+</html>
